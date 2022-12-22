@@ -1,0 +1,14 @@
+<h1>Hasta luego {{{name}}}</h1>
+<a href='/'> Volver al inicio</a>
+
+<script>
+    (function () {
+    const optionsPOST = {
+        method: 'POST'
+    };
+
+    fetch(`/logout`, optionsPOST)
+        .then((res) => res)
+        .then((response) => console.log(response));
+    })();
+</script>

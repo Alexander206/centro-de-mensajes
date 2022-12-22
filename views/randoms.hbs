@@ -1,0 +1,47 @@
+<h1>Numeros randoms</h1>
+
+<form>
+    <label for='number'>
+        <span>Numeros aleatorios</span>
+        <input type='number' id='number' placeholder='Tu numero' value='0' />
+    </label>
+    <br />
+    <button id='btn' type='submit'>Enviar</button>
+</form>
+
+<a href='/registrer'>Regresar a inicio?</a>
+<br />
+
+<div>
+    {{#each data}}
+            <li>{{indice}}: {{valor}}</li>
+    {{/each}}
+</div>
+
+<script>
+
+    const inputForm = document.getElementById('number');
+    const btnSubmit = document.getElementById('btn');
+
+    btnSubmit.addEventListener('click', async (event)=>{
+
+        console.log('Hola')
+
+        event.preventDefault()
+
+        const optionsPOST = {
+        method: 'POST',
+        body: JSON.stringify({number: inputForm.value}),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    await fetch('/api/randoms', optionsPOST)
+        .then((res) =>  {
+            console.log(res)
+            // window.location.href = "/api/randoms";
+        });
+    })
+
+</script>

@@ -1,0 +1,364 @@
+<div class='tarjeta__info'>
+    <h1>
+        Hola {{{name}}}  <a href="/bye">Cerrar Sesion</a>
+    </h1>
+    
+    <h1 class='tarjeta__title'>
+        Agrega un nuevo producto
+    </h1>
+    <p>
+        Aquí puedes agregar productos a esta lista. Tenemos un plus 😎 ahora la lista se actualiza en tiempo real
+    </p>
+
+    <form id='form-productos' method='' method='get'>
+        <label for='nombre'>
+            <input type='text' id='input-nombre' name='nombre' placeholder='Nombre' required />
+        </label>
+
+        <label for='precio'>
+            <input type='number' id='input-precio' name='precio' placeholder=' Precio' required />
+        </label>
+
+        <label for='thumbnail'>
+            <input type='text' id='input-thumbnail' name='thumbnail' placeholder=' URL de la imagen' required />
+        </label>
+        <input class='enviarProductos' type='submit' name='enviar' value='Agregar' />
+    </form>
+
+    <div>
+        <table id='resultados'></table>
+    </div>
+
+</div>
+
+<div id='chat'>
+    <h1>Centro de mensajes <span class='porcentaje'></span> </h1>
+
+    <img id="input-avatar" src={{{avatar}}} alt="Este es el avatar de usuario" value={{{avatar}}}>
+    <ul>
+        <li>
+            <strong>Correo: </strong> 
+            <span id="input-email">{{{correo}}}</span> 
+        </li>
+        <li>
+            <strong>Nombre: </strong> 
+            <span id="input-nombreChat">{{{nombre}}}</span> 
+        </li>
+        <li>
+            <strong>Apellido: </strong>
+            <span id="input-apellido">{{{apellido}}}</span> 
+        </li>
+        <li>
+            <strong>Edad: </strong> 
+            <span id="input-edad">{{{edad}}}</span> 
+        </li>
+        <li>
+            <strong>Alias: </strong>
+            <span id="input-alias">{{{alias}}}</span>
+        </li>
+    </ul>
+    <form id='form-chat' action='' method='get'>
+        <ul id='chat__contenedor'></ul>
+        <div class='chat__inferior'>
+            <span id='estado-escritura'></span>
+            <input type='text' id='input-mensaje' name='mensaje' placeholder='Tu mensaje ...' required />
+            <input class='enviarMensajes' type='submit' id='btn__chat' name='enviar2' value='Enviar' />
+        </div>
+    </form>
+</div>
+
+<style type="text/css">
+    h1 {
+    font-size: 1.2rem !important;
+    margin-bottom: 2rem !important;
+}
+
+p {
+    font-size: 0.8rem !important;
+}
+
+input {
+    display: flex;
+    justify-content: center;
+    font-size: 0.8rem !important;
+    height: 35px !important;
+    margin-bottom: 15px !important;
+}
+
+body {
+    padding: 30px;
+    font: 14px 'Lucida Grande', Helvetica, Arial, sans-serif;
+    display: flex;
+}
+body .tarjeta__info {
+    width: 65%;
+}
+body #chat {
+    position: fixed;
+    right: 50px;
+    display: flex;
+    flex-direction: column;
+    margin-left: 5vw;
+    width: 30%;
+}
+
+body #chat .chat__inferior {
+    width: 30%;
+    position: fixed;
+    bottom: 50px;
+}
+
+body #chat .chat__inferior2 {
+    width: 30%;
+    position: fixed;
+    bottom: 150px;
+}
+
+.enviarProductos {
+    margin: auto auto !important;
+    height: 47px !important;
+}
+
+.enviarMensajes {
+    margin: auto auto !important;
+    height: 47px !important;
+}
+
+#chat__contenedor {
+    font-size: 0.8rem;
+    scroll-behavior: initial;
+}
+
+.correo {
+    color: #00b7ff;
+}
+
+.hora {
+    color: rgb(177, 96, 50);
+}
+
+.mensaje {
+    color: rgb(144, 173, 86);
+}
+
+.imagen img {
+    width: 32px;
+    border-radius: 50%;
+}
+
+a {
+    color: #00b7ff;
+}
+
+img {
+    width: 7rem;
+}
+
+#estado-escritura p {
+    font-size: small;
+    color: #00b7ff;
+}
+
+#input-avatar {
+    align-self: center;
+    border-radius: 50%;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 800px) {
+    body {
+        flex-direction: column !important;
+    }
+
+    body .tarjeta__info {
+        width: 90%;
+    }
+    body #chat {
+        position: sticky;
+        right: 50px;
+        margin-left: 5vw;
+        width: 90%;
+    }
+
+    body #chat .chat__inferior {
+        width: 100%;
+        position: static;
+        bottom: 50px;
+    }
+
+    #chat__contenedor {
+        min-height: 200px;
+    }
+}
+
+</style>
+
+<script>
+    (function () {
+    const socket = io();
+
+    const formProductos = document.getElementById('form-productos');
+    const inputNombre = document.getElementById('input-nombre');
+    const inputPrecio = document.getElementById('input-precio');
+    const inputThumbnail = document.getElementById('input-thumbnail');
+
+    const resultados = document.getElementById('resultados');
+
+    const procentajeCompresionText = document.querySelector('.porcentaje');
+
+    const chatContenedor = document.getElementById('chat__contenedor');
+    const formChat = document.getElementById('form-chat');
+    const inputCorreo = document.getElementById('input-email');
+    const inputNombreChat = document.getElementById('input-nombreChat');
+    const inputApellido = document.getElementById('input-apellido');
+    const inputEdad = document.getElementById('input-edad');
+    const inputAlias = document.getElementById('input-alias');
+    const inputAvatar = document.getElementById('input-avatar');
+    const inputMensaje = document.getElementById('input-mensaje');
+
+    const estadoEscritura = document.getElementById('estado-escritura');
+
+    let today = new Date();
+    let now = today.toLocaleString();
+
+    // Conectar el servidor
+
+    socket.on('connect', () => {
+        console.log('Conectados al servidor');
+    });
+
+    // Recibir datos de productos
+
+    socket.on('setData', (data) => {
+        mostrarProductos(data);
+    });
+
+    // Evento envio de productos
+
+    formProductos.addEventListener('submit', (eventFormProductos) => {
+        eventFormProductos.preventDefault();
+        let producto = {
+            nombre: inputNombre.value,
+            precio: Number(inputPrecio.value),
+            thumbnail: inputThumbnail.value,
+        };
+        socket.emit('getData', producto);
+    });
+
+    // Recibir el chat
+
+    socket.on('setChat', (data) => {
+        mostrarChat(data);
+    });
+
+    // Enviar chat
+    formChat.addEventListener('submit', (eventFormChat) => {
+        eventFormChat.preventDefault();
+
+        let message = {
+            author: {
+                id: inputCorreo.innerHTML,
+                nombre: inputNombreChat.innerHTML,
+                apellido: inputApellido.innerHTML,
+                edad: inputEdad.innerHTML,
+                alias: inputAlias.innerHTML,
+                avatar: inputAvatar.src,
+            },
+            text: inputMensaje.value,
+            hora: now,
+        };
+
+        inputMensaje.value = "";
+
+        socket.emit('getChat', message);
+    });
+
+    // Está escribiendo...
+
+    socket.on('setTeclear', (data) => {
+        estaEscribiendo(data);
+    });
+
+    inputMensaje.addEventListener('keyup', () => {
+        let dataTeclear = {
+            correo: inputCorreo.innerHTML,
+            estado: true,
+        };
+
+        socket.emit('getTeclear', dataTeclear);
+    });
+
+    // funciones
+
+    function mostrarProductos(data) {
+        let tablaProductos = `
+    <tr>
+    <th>ID</th>
+    <th>NOMBRE</th>
+    <th>PRECIO</th>
+    <th>IMAGEN</th>
+    </tr>`;
+        if (data.length > 0) {
+            for (let i = 0; i < data.length; i++) {
+                tablaProductos = `${tablaProductos} <td> ${data[i].id} </td>`;
+                tablaProductos = `${tablaProductos} <td> ${data[i].nombre} </td>`;
+                tablaProductos = `${tablaProductos} <td> ${data[i].precio} </td>`;
+                tablaProductos = `${tablaProductos} <td> <img src =" ${data[i].thumbnail}" /> </td>`;
+                tablaProductos = `${tablaProductos}</tr><tr>`;
+            }
+        } else {
+            tablaProductos = `<tr><td> No hay productos </td></tr>`;
+        }
+        resultados.innerHTML = `${tablaProductos}`;
+    }
+
+    function mostrarChat(data) {
+        let dataNormalizada = JSON.stringify(data).length;
+        data = desnormalizacion(data);
+        let dataDesnormalizada = JSON.stringify(data).length;
+
+        const procentajeCompresion = ((dataNormalizada * 100) / dataDesnormalizada).toFixed(2);
+
+        procentajeCompresionText.innerText = `Compresión: ${procentajeCompresion} %`;
+
+        chatContenedor.innerHTML = '';
+        let listaChat;
+        for (let i = 0; i < data.mensajes.length; i++) {
+            listaChat = `
+            <span class = "imagen"> <img src="${data.mensajes[i].author.avatar}" alt="Avatar"> </span>
+            <span class = "correo"> ${data.mensajes[i].author.id} </span>
+            <span class = "hora"> ${data.mensajes[i].hora} </span>
+            <span class = "mensaje"> ${data.mensajes[i].text} </span>`;
+            let li = document.createElement('li');
+            li.innerHTML = listaChat;
+            chatContenedor.appendChild(li);
+        }
+    }
+
+    function estaEscribiendo(data) {
+        if (data.estado && data.correo.length > 1) {
+            estadoEscritura.innerHTML = `<p> ${data.correo} Está escribiendo ... </p>`;
+        } else {
+            estadoEscritura.innerHTML = '<p></p>';
+        }
+    }
+
+    // Normalización y desnormalización
+
+    function desnormalizacion(archivo) {
+        const autorScheme = new normalizr.schema.Entity('author', {}, { idAttribute: 'id' });
+        const mensajeScheme = new normalizr.schema.Entity('mensajes', {
+            author: autorScheme,
+        });
+
+        const mensajesScheme = new normalizr.schema.Entity('mensajes', {
+            mensajes: [mensajeScheme],
+        });
+
+        const dataDenormalize = normalizr.denormalize(archivo.result, mensajesScheme, archivo.entities);
+
+        return dataDenormalize;
+    }
+})();
+
+</script>

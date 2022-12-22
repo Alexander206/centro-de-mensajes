@@ -1,0 +1,70 @@
+<h3 class='login-registrer__title'>
+    Registrate
+</h3>
+<form class='login-registrer__form' id="form">
+    <label for='email'>
+        <span>Correo electronico</span>
+        <input type='email' id='email' placeholder='example@mail.com' required />
+    </label>
+    <label for='name'>
+        <span>Nombre</span>
+        <input type='name' id='name' placeholder='Tu nombre' required />
+    </label>
+    <label for='apellido'>
+        <span>Apellido</span>
+        <input type='lastname' id='apellido' placeholder='Tu apellido' required />
+    </label>
+    <label for='alias'>
+        <span>Alias</span>
+        <input type='text' id='alias' placeholder='Tu alias' required />
+    </label>
+    <label for='edad'>
+        <span>Edad</span>
+        <input type='age' id='edad' placeholder='Tu edad' required />
+    </label>
+    <label for='avatar'>
+        <span>Avatar (URL)</span>
+        <input type='text' id='avatar' placeholder='https://www.imagen.png' required />
+    </label>
+    <label for='password'>
+        <span>Contraseña</span>
+        <input type='password' id='password' placeholder='* * * * * *' required />
+    </label>
+    <a href="/">¿Iniciar sesion?</a> 
+    <br/>
+    <br/>
+    <button id="btn" type='submit'>Registrarse</button>
+</form>
+
+<script>
+    const inputForm = document.getElementById('form');
+    const btnSubmit = document.getElementById('btn');
+
+    btnSubmit.addEventListener('click', async (event) => {
+    
+    event.preventDefault();
+
+    const user = {
+        email: inputForm.email.value,
+        firstname: inputForm.name.value,
+        lastname: inputForm.apellido.value,
+        alias: inputForm.alias.value,
+        age: inputForm.edad.value,
+        avatar: inputForm.avatar.value,
+        password: inputForm.password.value,
+    }
+
+    const optionsPOST = {
+    method: 'POST',
+    body: JSON.stringify(user),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    };
+
+    await fetch('/registrer', optionsPOST)
+        .then((res) => {
+            window.location.href = res.url;
+        });
+    })
+</script>
